@@ -1,0 +1,22 @@
+Buen día
+
+Según lo acordado ayer, envío un Script con unos cambios en el SP EnvioNotificacionesSolvencia, los cambios incluyen lo siguiente:
+
+Se agregó el parámetro @listadoEstatus int, esto para poder obtener un listado de notificaciones de solvencias que esten en un status específico
+Se agregó el parámetro @listadoDesde datetime, para obtener un listado de notificaciones de solvencias desde una fecha específica
+Se agregó el parámetro @listadoTipo char(20), para obtener un listado de notificaciones de solvencias de un tipo específico (EDI, EMAIL) 
+
+La idea es que combinando estos parámetros puedas hacer lo siguiente:
+- Las notificaciones que te corresponda enviar release (status = 0, tipo = EDI)
+- Las notificaciones que corresponda hacer un hold (status = 4, tipo = EDI)
+
+También se agregó el parámetro @xmlActualizarStatus de tipo XML que recibe un listado de notificaciones de solvencia para que les actualices el status, por ejemplo:
+- Cuando envíes los releases, envías el xml con estauts 1 con esas notificaciones para que el sistema las coloque ese status.
+- Cuando te confirmen la aplicación del release envias el XML con status 2.
+
+Con esto creo que se abarca lo conversado, quedo a la orden para cualquier aclaratoria.
+
+Adjunto nuevamente, agregué el  cambio de status a "Notificar Hold" que se me había
+pasado por alto.
+
+Saludos.
