@@ -94,8 +94,6 @@ end
 
 ### FTP controller
 class FTPUpdater
- 
-
 
   def self.move
 
@@ -110,21 +108,22 @@ end
 
 ####
 #=begin
-client = TinyTds::Client.new username: 'sa', password: 'avila', dataserver: 'USMIAVS029.bremat.local\MSQL2008', database: "SCI"
-results = client.execute("EXEC EnvioNotificacionesSolvencia 0,'EDI','20180201'")
+client = TinyTds::Client.new username: 'sa', password: 'avila', dataserver: 'USMIAVS029.bremat.local\MSQL2008', database: "SCI", encoding: 'UTF-8', use_utf16: 'false'
+#results = client.execute("EXEC EnvioNotificacionesSolvencia 0,'EDI','2018-02-01'")
+results = client.execute("EXEC EnvioNotificacionesSolvencia 0,NULL,'EDI'")
 results.each do |fila|
-	puts "FILA: #{fila.inspect}"
+	puts "FILA: #{fila.to_s}"
 end
 #results = client.execute("SELECT TOP 1 * FROM tfactura")
 #results.each do |result|
 #  puts "SQL RESUlt: #{result.inspect}"
 #end
 #=end
-################################################################################33
+################################################################################
 # ajuste de datos para mappear respectivo a cada salida
-incomming_data = [ ]
+incomming_data = []
 
-test = true
+test = false
 if test
   require File.join('.','caucedo_test')
   incomming_data += @caucedo_objects
