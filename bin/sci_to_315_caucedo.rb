@@ -1,5 +1,4 @@
 # Lee de la BD y lo transforma en un archivo edi 315 para ser enviado vía FTP a ambas compañías en Caucedo
-
 require 'tiny_tds'
 require 'ostruct'
 
@@ -110,17 +109,17 @@ end
 # datos obtenidos de la BD
 
 ####
-=begin
+#=begin
 client = TinyTds::Client.new username: 'sa', password: 'avila', dataserver: 'USMIAVS029.bremat.local\MSQL2008', database: "SCI"
-results = client.execute("EXEC EnvioNotificacionesSolvencia NULL,'20180201'")
+results = client.execute("EXEC EnvioNotificacionesSolvencia 0,'EDI','20180201'")
 results.each do |fila|
 	puts "FILA: #{fila.inspect}"
 end
 #results = client.execute("SELECT TOP 1 * FROM tfactura")
-#results.each do |result| 
+#results.each do |result|
 #  puts "SQL RESUlt: #{result.inspect}"
 #end
-=end
+#=end
 ################################################################################33
 # ajuste de datos para mappear respectivo a cada salida
 incomming_data = [ ]
