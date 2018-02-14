@@ -65,7 +65,7 @@ JOIN SendMail d ON d.OrigenNombre = 'sSolvencia' AND d.OrigenId = a.solvenciaId 
 WHERE a.status = 2 AND b.fechaRetiro < GETDATE()
 
 IF COALESCE(@listadoEstatus , @listadoTipo, @listadoDesde) IS NOT NULL BEGIN
-	SELECT a.solvenciaId, a.equipoId, a.manifiestoId, a.fechaStatus, a.solvenciaNotifId, c.tipo, a.status
+	SELECT a.solvenciaId, a.equipoId, a.manifiestoId, a.fechaStatus, a.solvenciaNotifId, c.tipo, a.status,a.ptocreacion
 	FROM sSolvenciaNotificaciones a
 	JOIN sSolvenciaxItems b ON a.solvenciaId = b.solvenciaid  AND a.equipoId = b.equipoid AND a.manifiestoId = b.manifiestoid 
 	JOIN sSolvenciaNotificacionConfig c ON a.solvenciaNotifId = c.solvenciaNotifId
