@@ -1,7 +1,7 @@
 #require File.join('.','sci_to_315_caucedo')
 @caucedo_objects = [
-	ReleaseCaucedo.new( { equipo: "ZCSU-7037300" , status: 'release' } ) ,
-	ReleaseCaucedo.new( { equipo: "ZCSU-8475933" , status: 'hold'    } ) ,
+	ReleaseCaucedo.new( { equipo: "ZCSU-7037300" , status: :release } ) ,
+	ReleaseCaucedo.new( { equipo: "ZCSU-8475933" , status: :hold    } ) ,
 ]
 =begin
 caucedo_data_release = %q{ 
