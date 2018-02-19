@@ -118,11 +118,8 @@ file.each_line do |line|
       if nuevo_objeto
         puts "   DESTINO: #{$1}"
         objetos[indice][:destino] = $1
-        objetos[indice][:tipo] = :gate_in if $1 != 'DOHAI'
+        objetos[indice][:tipo] = :gate_in if $1 == 'DOHAI'
       end
-      #loc+=1
-      # objetos[indice][:origen ]  =   if loc == 0
-      # objetos[indice][:destino] =   if loc != 0
     when /^LOC\+11\+(\w*):.*'$/ # Origen
       if nuevo_objeto
         puts "   ORIGEN: #{$1}"

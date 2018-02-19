@@ -5,6 +5,7 @@ require 'net/ftp'
 require 'net/sftp'
 require 'fileutils'
 require "erb"
+require 'logger'
 
 # Clase base para las liberaciones
 class Release < OpenStruct
@@ -98,13 +99,19 @@ class ReleaseCaucedo < Release
   end
   
   def output_filename
-    File.join(outputdir,self.filename)
+    File.join(outputdir , self.filename)
   end
 
   def output message=''
     File.write(output_filename,map)
     # Enviar vía FTP
   end
+end
+
+class ReleaseSTWD < ReleaseCaucedo
+
+  
+
 end
 
 class ReleaseHIT < Release
@@ -146,100 +153,115 @@ end
 
 ### FTP controller
 class FTPUpdater
-  def self.ftp
-    puts "GETINg ftp class attribute"
-    @@ftp ||= init
+  attr_writer :logger
+  
+  def config
+    
   end
 
-  def self.ftp=(value)
-    puts "ASIGNANDO variable de clase ftp #{value}"
-    @@ftp = value
+  def initialize params={}
+    
   end
 
-  def self.init
+  def logger
+    @logger ||= Logger.new
+  end
+
+  def ftp
+    #puts "GETINg ftp class attribute"
+    @ftp ||= init
+  end
+
+  def ftp=(value)
+    #puts "ASIGNANDO variable de clase ftp #{value}"
+    @ftp = value
+  end
+
+  def init
     puts "INIt"
     ftp = Net::FTP.new(server)
     ftp.passive = true
     #puts "FTP: #{ftp.inspect}"
     ftp.login usuario,password
     ftp.chdir( File.join( directory ) )
-    puts "LISTADO de FTP: "+( ftp.list.inspect )
+    #puts "LISTADO de FTP: "+( ftp.list.inspect )
     ftp
     #<TODO: capture errors>
   end
 
-  def self. pre_envio
-    puts "    PRE_ENVIO_FTP:"
+  def pre_envio
+    #puts "    PRE_ENVIO_FTP:"
     result = `unix2dos #{data.outputdir}`
-    puts "    RESULTADO DE PRE_ENVIO_FTP: #{}"
+    #puts "    RESULTADO DE PRE_ENVIO_FTP: #{}"
     result
   end
 
-  def self.move data
+  def move data
     errors = []
     success = [] 
     #pre_envio data
 
     data.each do |objeto|
       begin
-        puts "MOVE: file to move #{objeto.output_filename}"
+        puts "MOVE #{self.class.name}: file to move #{objeto.output_filename}"
         result = ftp.puttextfile( objeto.output_filename )
-        puts "    RESULT: #{result}"
-        puts "    LISTADO FTP: #{ftp.list.inspect}"
+        #puts "    RESULT: #{result}"
+        #puts "    LISTADO FTP: #{ftp.list.inspect}"
         success << objeto
       rescue => e
         puts "ERROR: #{e.message}"
-        puts "    stacktrace: #{e.backtrace}"
+        #puts "    stacktrace: #{e.backtrace}"
         errors << objeto
       end
-        #files = ftp.chdir('pub/lang/ruby/contrib')
-        #files = ftp.list('n*')
-        #ftp.getbinaryfile('nif.rb-0.91.gz', 'nif.gz', 1024)
     end
 
+    ftp.nlst.each do |filename|
+      puts "   REMOTE FILE: #{filename}"
+    end
+ 
     [errors,success]
     ensure
       ftp.close
   end
 
-  def self.clean
+  def clean
     FileUtils.rm_rf(Dir.glob(File.join(directory,'*')))
   end
 end
 
 class SFTPUpdater
-  def self.ftp
-    puts "GETINg ftp class attribute"
-    @@ftp ||= init 
+  def ftp
+    #puts "GETINg ftp class attribute"
+    @ftp ||= init 
   end
 
-  def self.ftp=(value)
-    puts "ASIGNANDO variable de clase ftp #{value}"
-    @@ftp = value
+  def ftp=(value)
+    #puts "ASIGNANDO variable de clase ftp #{value}"
+    @ftp = value
   end
 
-  def self.connection
+  def connection
     #Net::FTP.new(SERVER)
     Net::SFTP.start(server,usuario,password: password)
     #ftp.passive = true
   end
 
-  def self.init
-    puts "INIt"
+  def init
+    #puts "INIt"
     ftp = connection
     #puts "FTP: #{ftp.inspect}"
     #puts "LOGIN "+(ftp.login USUARIO,PASSWORD).to_s
-   # ftp.chdir(File.join(DIRECTORY))
+    # ftp.chdir(File.join(DIRECTORY))
     #puts "LISTADO de FTP: "+(ftp.list.inspect)
     ftp
     #<TODO: capture errors>
   end
 
-  def self.pre_envio
+  def pre_envio
     
   end
 
-  def self.move data
+  def move data
     errors = []
     success = [] 
 
@@ -262,13 +284,16 @@ class SFTPUpdater
         #files = ftp.list('n*')
         #ftp.getbinaryfile('nif.rb-0.91.gz', 'nif.gz', 1024)
     end
+    ftp.dir.foreach(directory) do |file|
+      puts "  FILE Remoto: #{file.longname}"
+    end
 
     [errors,success]
     ensure
      # ftp.close
   end
 
-  def self.clean
+  def clean
     FileUtils.rm_rf(Dir.glob(File.join(directory,'*')))
   end
 end
@@ -279,82 +304,30 @@ class FTPUpdaterDpworld < SFTPUpdater
   SERVER='edi.caucedo.com'
   DIRECTORY=['ZZVECO'] 
 
-  def self.usuario
-    @@usuario ||= 'ZZVECO'
+  attr_accessor :usuario,:password,:server,:directory
+
+  def initialize params={}
+    self.usuario = 'ZZVECO'
+    self.password = 's9rM=6xi'
+    self.server='edi.caucedo.com'
+    #self.directory= ['ZZVECO']
+    self.directory= ['ZZVECO','Response']
+  end
+=begin
+  def usuario
+    @usuario ||= 'ZZVECO'
   end
 
-  def self.password
-    @@password ||= 's9rM=6xi'
+  def password
+    @password ||= 's9rM=6xi'
   end
   
-  def self.server
-    @@server ||= 'edi.caucedo.com'
+  def server
+    @server ||= 'edi.caucedo.com'
   end
 
-  def self.directory
-    @@directory ||= ['ZZVECO'] 
-  end
-  
-#  def self.ftp
-#    puts "GETINg ftp class attribute"
-#    @@ftp ||= init 
-#  end
-
-#  def self.ftp=(value)
-#    puts "ASIGNANDO variable de clase ftp #{value}"
-#    @@ftp = value
-#  end
-
-#  def self.connection
-#    #Net::FTP.new(SERVER)
-#    Net::SFTP.start(SERVER,USUARIO,password: PASSWORD)
-#    #ftp.passive = true
-#  end
-=begin
-  def self.init
-    puts "INIt"
-    ftp = connection
-    #puts "FTP: #{ftp.inspect}"
-    #puts "LOGIN "+(ftp.login USUARIO,PASSWORD).to_s
-   # ftp.chdir(File.join(DIRECTORY))
-    #puts "LISTADO de FTP: "+(ftp.list.inspect)
-    ftp
-    #<TODO: capture errors>
-  end
-=end
-
-=begin
-  def self.move data
-    errors = []
-    success = [] 
-
-    data.each do |objeto|
-      begin
-        puts "MOVE: file to move #{objeto.output_filename}"
-        #result = ftp.puttextfile( objeto.output_filename )
-        result = ftp.upload!( objeto.output_filename,File.join(DIRECTORY,objeto.filename) )
-        #puts "    RESULT: #{result}"
-        #puts "    LISTADO FTP: #{ftp.list.inspect}"
-        success << objeto
-      rescue => e
-        puts "ERROR: #{e.message}"
-        #puts "    stacktrace: #{e.backtrace}"
-        errors << objeto
-      end
-        #files = ftp.chdir('pub/lang/ruby/contrib')
-        #files = ftp.list('n*')
-        #ftp.getbinaryfile('nif.rb-0.91.gz', 'nif.gz', 1024)
-    end
-
-    [errors,success]
-    ensure
-     # ftp.close
-  end
-=end
-
-=begin
-  def self.clean
-    FileUtils.rm_rf(Dir.glob(File.join(::DIRECTORY,'*')))
+  def directory
+    @directory ||= ['ZZVECO'] 
   end
 =end
 end
@@ -365,86 +338,30 @@ class FTPUpdaterSTWD < FTPUpdater
   SERVER='ftpus.veconinter.com'
   DIRECTORY=['ZIM']
 
-  def self.usuario
-    @@usuario ||= 'bremat\ftp_stonewood'
+  attr_accessor :usuario,:password,:server,:directory
+
+  def initialize params={}
+    self.usuario = 'bremat\ftp_stonewood'
+    self.password = 'st123456**'
+    self.server='ftpus.veconinter.com'
+    self.directory= ['STWD']
+  end
+=begin
+  def usuario
+    @usuario ||= 'bremat\ftp_stonewood'
   end
 
-  def self.password
-    @@password ||= 'st123456**'
+  def password
+    @password ||= 'st123456**'
   end
   
-  def self.server
-    @@server ||= 'ftpus.veconinter.com'
+  def server
+    @server ||= 'ftpus.veconinter.com'
   end
 
-  def self.directory
-    @@directory ||= ['ZIM']
-  end
-
-=begin
-  def self.ftp
-    puts "GETINg ftp class attribute"
-    @@ftp ||= init 
-  end
-
-  def self.ftp=(value)
-    puts "ASIGNANDO variable de clase ftp #{value}"
-    @@ftp = value
-  end
-=end
-=begin
-  def self.init
-    puts "INIt"
-    ftp = Net::FTP.new(SERVER,USUARIO,PASSWORD)
-    ftp.passive = true
-    #puts "FTP: #{ftp.inspect}"
-    #puts "LOGIN "+(ftp.login USUARIO,PASSWORD).to_s
-    ftp.chdir(File.join(DIRECTORY))
-    #puts "LISTADO de FTP: "+(ftp.list.inspect)
-    ftp
-    #<TODO: capture errors>
-  end
-=end
-=begin
-  def self.pre_envio_ftp data
-    puts "    PRE_ENVIO_FTP:"
-    result = `unix2dos #{data.outputdir}`
-    puts "    RESULTADO DE PRE_ENVIO_FTP: #{}"
-    result
-  end
-=end
-=begin
-  def self.move data
-    # preparar para enviar
-    pre_envio_ftp data[0]
-    errors = []
-    success = [] 
-
-    data.each do |objeto|
-      begin
-        puts "MOVE: file to move #{objeto.output_filename}"
-        result = ftp.puttextfile( objeto.output_filename )
-        #puts "    RESULT: #{result}"
-        #puts "    LISTADO FTP: #{ftp.list.inspect}"
-        success << objeto
-      rescue => e
-        puts "ERROR: #{e.message}"
-        puts "    stacktrace: #{e.backtrace}"
-        errors << objeto
-      end
-        #files = ftp.chdir('pub/lang/ruby/contrib')
-        #files = ftp.list('n*')
-        #ftp.getbinaryfile('nif.rb-0.91.gz', 'nif.gz', 1024)
-    end
-
-    [errors,success]
-    ensure
-      ftp.close
-  end
-=end
-=begin
-  def self.clean
-    FileUtils.rm_rf(Dir.glob(File.join(directory,'*')))
+  def directory
+    #@directory ||= ['ZIM']
+    @directory  ||= ['STWD']
   end
 =end
 end
@@ -455,22 +372,31 @@ class FTPUpdaterHIT < FTPUpdater
   SERVER='ftpus.veconinter.com'
   DIRECTORY=['Liberaciones']
 
-  def self.usuario
-    @@usuario ||= 'bremat\ftp_hit'
+  attr_accessor :usuario,:password,:server,:directory
+  def initialize params={}
+    self.usuario = 'bremat\ftp_hit'
+    self.password = 'hi123456**'
+    self.server='ftpus.veconinter.com'
+    self.directory= ['Response']
+    end
+=begin
+  def usuario
+    @usuario ||= 'bremat\ftp_hit'
   end
 
-  def self.password
-    @@password ||= 'hi123456**'
+  def password
+    @password ||= 'hi123456**'
   end
   
-  def self.server
-    @@server ||= 'ftpus.veconinter.com'
+  def server
+    @server ||= 'ftpus.veconinter.com'
   end
 
-  def self.directory
-    @@directory ||= ['Liberaciones']
+  def directory
+    #@directory ||= ['Liberaciones']
+    @directory ||= ['Response']
   end
-
+=end
 end
 
 class FTPUpdaterTest < FTPUpdater
@@ -479,28 +405,37 @@ class FTPUpdaterTest < FTPUpdater
   SERVER='localhost'
   DIRECTORY=['/home','omarquina','custom_edi_processor','ftp','test']
 
-  def self.ftp
+  attr_accessor :usuario,:password,:server,:directory
+
+  def initialize params={}
+    self.usuario = 'omarquina'
+    self.password = 'OrCaItO6562'
+    self.server='localhost'
+    self.directory= ['/home','omarquina','custom_edi_processor','ftp','test']
+  end
+=begin
+  def ftp
     puts "GETINg ftp class attribute"
     @@ftp ||= init 
   end
 
-  def self.ftp=(value)
+  def ftp=(value)
     puts "ASIGNANDO variable de clase ftp #{value}"
     @@ftp = value
   end
 
-  def self.init
+  def init
     puts "INIt"
-    ftp = Net::FTP.new(SERVER)
+    ftp = Net::FTP.new(server)
     puts "FTP: #{ftp.inspect}"
-    puts "LOGIN "+(ftp.login USUARIO,PASSWORD).to_s
-    ftp.chdir(File.join(DIRECTORY))
+    puts "LOGIN "+(ftp.login usuario,password).to_s
+    ftp.chdir(File.join(directory))
     puts "LISTADO de FTP: "+(ftp.list.inspect)
     ftp
     #<TODO: capture errors>
   end
 
-  def self.move data
+  def move data
     
     errors = []
     success = [] 
@@ -510,27 +445,26 @@ class FTPUpdaterTest < FTPUpdater
         puts "MOVE: file to move #{objeto.output_filename}"
         result = ftp.puttextfile( objeto.output_filename )
         puts "    RESULT: #{result}"
-        puts "    LISTADO FTP: #{ftp.list.inspect}"
+        #puts "    LISTADO FTP: #{ftp.list.inspect}"
         success << objeto
       rescue => e
         puts "ERROR: #{e.message}"
         puts "    stacktrace: #{e.backtrace}"
         errors << objeto
       end
-        #files = ftp.chdir('pub/lang/ruby/contrib')
-        #files = ftp.list('n*')
-        #ftp.getbinaryfile('nif.rb-0.91.gz', 'nif.gz', 1024)
     end
-
     [errors,success]
     ensure
       ftp.close
   end
 
-  def self.clean
+  def clean
     FileUtils.rm_rf(Dir.glob(File.join(DIRECTORY,'*')))
   end
+
+=end
 end
+
 ##### Por definir donde deben colocarse
 def outputs data
   data.each do |data|
@@ -671,22 +605,30 @@ end
 # transferencia de archivos
 # PRUEBAS
 # RELEASE
-#errors,success=FTPUpdaterTest.move caucedo_release_data
-#FTPUpdaterTest.clean
+
+ftpTest = FTPUpdaterTest.new
+errors,success=ftpTest.move caucedo_release_data
+ftpTest.clean
 # HOLD
-#FTPUpdaterTest.move caucedo_hold_data
-#FTPUpdaterTest.clean
+=begin
+ftpTest = FTPUpdaterTest.new
+ftpTest.move caucedo_hold_data
+ftpTest.clean
+=end
+
 ####
 #puts ""
 #errors
 
 #=begin
-errorsStwd,successStwd=FTPUpdaterSTWD.move caucedo_release_data
-puts "STWD: ERR:  #{errorsStwd.inspect} "
-puts "      SUCC: #{successStwd.inspect} "
+ftpSTWD = FTPUpdaterSTWD.new
+errorsStwd,successStwd=ftpSTWD.move caucedo_release_data
+puts "STWD: ERR:  #{errorsStwd.inspect}"
+puts "      SUCC: #{successStwd.inspect}"
 #=end
 #=begin
-errorsDpw,successDpw=FTPUpdaterDpworld.move caucedo_release_data
+ftpDpworld = FTPUpdaterDpworld.new
+errorsDpw,successDpw=ftpDpworld.move caucedo_release_data
 puts "CAUCEDO: ERR:  #{errorsDpw.inspect} "
 puts "         SUCC: #{successDpw.inspect} "
 #=end
