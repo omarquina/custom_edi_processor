@@ -137,8 +137,12 @@ file.each_line do |line|
       puts "    CERRANDO el objeto"
       nuevo_objeto = false
     when /^DTM\+\d:(\w{8})(\w{4}):.*'$/ 
-      puts "      FECHA: #{$1}"
-      puts "      HORA: #{$2}"
+      if nuevo_objeto
+        puts "      FECHA: #{$1}"
+        puts "      HORA: #{$2}"
+        objetos[indice][:fecha] = $1
+        objetos[indice][:hora]  = $2
+      end
   end
   
 end

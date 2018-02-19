@@ -89,7 +89,7 @@ class ReleaseHIT < Release
 
   def estatus
     self.status == :release ? 'MS' : 'UT'
- e end
+  end
 
   def template_filename
     File.join(template_dir,"315_hit.erb")

@@ -19,6 +19,7 @@ gem 'sqlite3'
 gem 'tiny_tds', '2.0'
 #gem 'ruby_odat
 gem 'concurrent-ruby' 
+gem 'net-sftp'
 #gem 'sqlserver'
 #gem 'sqlserver-sequence'
 
