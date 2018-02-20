@@ -110,8 +110,6 @@ end
 
 class ReleaseSTWD < ReleaseCaucedo
 
-  
-
 end
 
 class ReleaseHIT < Release
@@ -121,8 +119,12 @@ class ReleaseHIT < Release
     self.status == :release ? 'MS' : 'UT'
   end
 
+  def template_name
+    @template_name ||= '315_hit.erb'
+  end
+
   def template_filename
-    File.join(template_dir,TEMPLATE_FILENAME)
+    File.join(template_dir,template_name)
   end
 
   def filename
@@ -200,23 +202,30 @@ class FTPUpdater
     errors = []
     success = [] 
     #pre_envio data
-
+    $LOG.debug "--------------------------------------------------------"
     data.each do |objeto|
       begin
         puts "MOVE #{self.class.name}: file to move #{objeto.output_filename}"
+        $LOG.debug "   Copiando: #{objeto.output_filename}"
         result = ftp.puttextfile( objeto.output_filename )
         #puts "    RESULT: #{result}"
         #puts "    LISTADO FTP: #{ftp.list.inspect}"
         success << objeto
       rescue => e
         puts "ERROR: #{e.message}"
+        $LOG.error "    ERROR copiando: #{objeto.output_filename}"
+        $LOG.error "          mensaje: #{e.message}"
         #puts "    stacktrace: #{e.backtrace}"
         errors << objeto
       end
     end
 
-    ftp.nlst.each do |filename|
+    
+    $LOG.debug "-------------------------------------------------------------"
+    $LOG.debug "   LISTADO de Archivos Transferidos: "
+    ftp.ls.each do |filename|
       puts "   REMOTE FILE: #{filename}"
+      $LOG.debug "      #{filename}"
     end
  
     [errors,success]
@@ -270,6 +279,7 @@ class SFTPUpdater
     data.each do |objeto|
       begin
         puts "MOVE: file to move #{objeto.output_filename}"
+        $LOG.debug "     Copiando: #{objeto.output_filename}"
         #result = ftp.puttextfile( objeto.output_filename )
         result = ftp.upload!( objeto.output_filename,File.join(directory,objeto.filename) )
         #puts "    RESULT: #{result}"
@@ -284,9 +294,15 @@ class SFTPUpdater
         #files = ftp.list('n*')
         #ftp.getbinaryfile('nif.rb-0.91.gz', 'nif.gz', 1024)
     end
+
+$LOG.debug "-------------------------------------------------------------"
+$LOG.debug "LISTADO DE ARCHIVOS TRANSFERIDOS"
     ftp.dir.foreach(directory) do |file|
+$LOG.debug "    #{file.longname}"
+
       puts "  FILE Remoto: #{file.longname}"
     end
+
 
     [errors,success]
     ensure
@@ -310,8 +326,8 @@ class FTPUpdaterDpworld < SFTPUpdater
     self.usuario = 'ZZVECO'
     self.password = 's9rM=6xi'
     self.server='edi.caucedo.com'
-    #self.directory= ['ZZVECO']
-    self.directory= ['ZZVECO','Response']
+    self.directory= ['ZZVECO']
+    #self.directory= ['ZZVECO','Response']
   end
 =begin
   def usuario
@@ -344,7 +360,7 @@ class FTPUpdaterSTWD < FTPUpdater
     self.usuario = 'bremat\ftp_stonewood'
     self.password = 'st123456**'
     self.server='ftpus.veconinter.com'
-    self.directory= ['STWD']
+    self.directory= ['ZIM']
   end
 =begin
   def usuario
@@ -377,7 +393,7 @@ class FTPUpdaterHIT < FTPUpdater
     self.usuario = 'bremat\ftp_hit'
     self.password = 'hi123456**'
     self.server='ftpus.veconinter.com'
-    self.directory= ['Response']
+    self.directory= ['Liberaciones']
     end
 =begin
   def usuario
@@ -468,7 +484,9 @@ end
 ##### Por definir donde deben colocarse
 def outputs data
   data.each do |data|
+    #puts "DATA: #{data.inspect}"
     puts "  data mapping: #{data.map}"
+    puts "-----"
     data.output
   end
 end
@@ -489,20 +507,27 @@ client = TinyTds::Client.new username: 'sa', password: 'avila', dataserver: data
 #  puts "SQL RESUlt: #{result.inspect}"
 #end
 #=end
+$LOG = Logger.new(File.join('logs',Time.now.strftime("%d-%m-%Y_%H%M%S.log")))
 
 # OBTENER los equipos a "LIBERAR" de ambos puertos
 caucedo_release_data = []
 hit_release_data = []
 
 puts "RELEASE"
+$LOG.debug "-----------------------------------------------------------"
+$LOG.debug "-----------------------------------------------------------"
+$LOG.debug "OBTENIENDO LIBERACIONES"
 results = client.execute("EXEC EnvioNotificacionesSolvencia 0,NULL,'EDI'")
 
 results.each do |fila|
 	puts "FILA: #{fila.to_s}"
+        $LOG.debug "   LIBERACION: #{fila.to_s}"
         equipo = fila["equipoId"]
         puerto = fila["ptocreacion"]
         status = :release
-        params = { equipo: equipo, status: status }
+        tipo_notificacion = fila["solvenciaNotifId"]
+
+        params = { equipo: equipo, status: status,tipo_notificacion: tipo_notificacion }
         case puerto
           when "DOCAU" 
             caucedo_release_data << ReleaseCaucedo.new( params )
@@ -510,21 +535,33 @@ results.each do |fila|
 	    hit_release_data << ReleaseHIT.new( params )
         end
 end
+puts "  CAUCEDO_RELASE_DATA: #{caucedo_release_data.inspect}"
+puts "  HIT_RELASE_DATA: #{hit_release_data.inspect}"
+$LOG.debug "-----------------------------------------------------------"
+$LOG.debug "    TOTAL LIBERACIONES:" 
 puts "CAUCEDO: #{caucedo_release_data.size}"
+$LOG.debug "        CAUCEDO: #{caucedo_release_data.size}"
+$LOG.debug "-----------------------------------------------------------"
 puts "HIT: #{hit_release_data.size}"
+$LOG.debug "        HAINA: #{hit_release_data.size}"
 #exit
 # OBTENER los equipos a "Bloquear" de ambos puertos
+$LOG.debug "-----------------------------------------------------------"
+$LOG.debug "-----------------------------------------------------------"
 puts "HOLD"
+$LOG.debug "OBTENIENDO LOS BLOQUEOS"
 results = client.execute("EXEC EnvioNotificacionesSolvencia 4,NULL,'EDI'")
 caucedo_hold_data = []
 hit_hold_data = []
 
 results.each do |fila|
 	puts "FILA: #{fila.to_s}"
-        equipo = fila["equipo"]
+        $LOG.debug "    BLOQUEO: #{fila.to_s}"
+        equipo = fila["equipoId"]
         puerto = fila["ptocreacion"]
-        status = :release
-        params = { equipo: equipo, status: status }
+        tipo_notificacion = fila["solvenciaNotifId"]
+        status = :hold
+        params = { equipo: equipo, status: status,tipo_notificacion: tipo_notificacion }
         case puerto
           when /DOCAU/i
             caucedo_hold_data << ReleaseCaucedo.new( params)
@@ -532,8 +569,15 @@ results.each do |fila|
 	    hit_hold_data << ReleaseHIT.new( params )
         end
 end
+puts "  CAUCEDO_HOLD_DATA: #{caucedo_hold_data.inspect}"
+puts "  HIT_HOLD_DATA: #{hit_hold_data.inspect}"
+$LOG.debug "-----------------------------------------------------------"
+$LOG.debug "    TOTAL de BLOQUEOS:"
 puts "CAUCEDO HOLD: #{caucedo_hold_data.size}"
+$LOG.debug "        CAUCEDO: #{caucedo_hold_data.size}"
+$LOG.debug "-----------------------------------------------------------"
 puts "HIT HOLD: #{hit_hold_data.size}"
+$LOG.debug "        HAINA: #{hit_hold_data.size}"
 ################################################################################
 # ajuste de datos para mappear respectivo a cada salida
 incomming_data = []
@@ -545,13 +589,13 @@ if test
   require File.join('.','hit_test')
   incomming_data += @hit_objects
 else
-  incomming_data += caucedo_release_data
-  incomming_data += hit_release_data
-  incomming_data += caucedo_hold_data
-  incomming_data += hit_hold_data
+#  incomming_data += caucedo_release_data
+#  incomming_data += hit_release_data
+#  incomming_data += caucedo_hold_data
+#  incomming_data += hit_hold_data
 end
 
-puts "Incoming DATA: #{incomming_data.inspect}"
+#puts "Incoming DATA: #{incomming_data.inspect}"
 # mapeo de salida
 messages = []
 ################### <SPIKES>
@@ -593,7 +637,13 @@ end
 # Generación de archivos
 # CAUCECO
 puts "CAUCEDO RELEASE:"
+
+$LOG.debug "-------------------------------------------------------------"
+$LOG.debug "ESCRIBIENDO A DISCO ARCHiVOS EDI"
+$LOG.debug "-------------------------------------------------------------"
 outputs caucedo_release_data 
+outputs caucedo_hold_data 
+$LOG.debug "    RELEASES CAUCEDO"
 #pre_envio_ftp
 #exit
 =begin
@@ -606,9 +656,9 @@ end
 # PRUEBAS
 # RELEASE
 
-ftpTest = FTPUpdaterTest.new
-errors,success=ftpTest.move caucedo_release_data
-ftpTest.clean
+#ftpTest = FTPUpdaterTest.new
+#errors,success=ftpTest.move caucedo_release_data
+#ftpTest.clean
 # HOLD
 =begin
 ftpTest = FTPUpdaterTest.new
@@ -621,25 +671,76 @@ ftpTest.clean
 #errors
 
 #=begin
+$LOG.debug "Transferencia FTP a STONEWOOD" 
 ftpSTWD = FTPUpdaterSTWD.new
 errorsStwd,successStwd=ftpSTWD.move caucedo_release_data
-puts "STWD: ERR:  #{errorsStwd.inspect}"
-puts "      SUCC: #{successStwd.inspect}"
+$LOG.debug "    Transferencias con:" 
+$LOG.debug "       ERR:  #{errorsStwd.size}"
+$LOG.debug "       SUCCESS: #{successStwd.size}"
 #=end
 #=begin
+$LOG.debug "Transferencia FTP a DPWOrld" 
 ftpDpworld = FTPUpdaterDpworld.new
 errorsDpw,successDpw=ftpDpworld.move caucedo_release_data
-puts "CAUCEDO: ERR:  #{errorsDpw.inspect} "
-puts "         SUCC: #{successDpw.inspect} "
+$LOG.debug "   Transferencias con:" 
+$LOG.debug "     ERR:  #{errorsDpw.inspect} "
+$LOG.debug "     SUCCESS: #{successDpw.inspect} "
 #=end
 
-exit
+
+#exit
 puts "CAUCEDO HOLD:"
-caucedo_hold_data.each do |data|
-  puts "    data mapping: #{data.map}"
-  data.output
-end
+$LOG.debug "HOLD CAUCEDO"
+#caucedo_hold_data.each do |data|
+#  puts "    data mapping: #{data.map}"
+#  data.output
+#end
 # envío de archivos vía FTP
 # CAUCEDO
+#=begin
+$LOG.debug "Transferencia FTP a STONEWOOD" 
+ftpSTWD = FTPUpdaterSTWD.new
+errorsStwd,successStwd=ftpSTWD.move caucedo_hold_data
+$LOG.debug "    Transferencias con:" 
+$LOG.debug "       ERR:  #{errorsStwd.size}"
+$LOG.debug "       SUCCESS: #{successStwd.size}"
+#=end
+#=begin
+$LOG.debug "Transferencia FTP a DPWOrld" 
+ftpDpworld = FTPUpdaterDpworld.new
+errorsDpw,successDpw=ftpDpworld.move caucedo_hold_data
+$LOG.debug "   Transferencias con:" 
+$LOG.debug "     ERR:  #{errorsDpw.inspect} "
+$LOG.debug "     SUCCESS: #{successDpw.inspect} "
+#=end
+
 # notificación de la operación a personal clave vía email
 
+
+puts "HAINA RELEASE:"
+
+$LOG.debug "-------------------------------------------------------------"
+$LOG.debug "ESCRIBIENDO A DISCO ARCHiVOS EDI"
+outputs hit_release_data 
+outputs hit_hold_data 
+$LOG.debug "-------------------------------------------------------------"
+$LOG.debug "    RELEASES HAINA"
+
+#=begin
+$LOG.debug "Transferencia FTP a HAINA" 
+ftpHIT = FTPUpdaterHIT.new
+errorsHIT,successHIT=ftpHIT.move hit_release_data
+$LOG.debug "   Transferencias con:" 
+$LOG.debug "     ERR:  #{errorsHIT.inspect} "
+$LOG.debug "     SUCCESS: #{successHIT.inspect} "
+#=end
+$LOG.debug "-------------------------------------------------------------"
+$LOG.debug "HOLD HAINA"
+#=begin
+$LOG.debug "Transferencia FTP a HAINA" 
+ftpHIT = FTPUpdaterHIT.new
+errorsHIT,successHIT=ftpHIT.move hit_hold_data
+$LOG.debug "   Transferencias con:" 
+$LOG.debug "     ERR:  #{errorsHIT.inspect} "
+$LOG.debug "     SUCCESS: #{successHIT.inspect} "
+#=end
