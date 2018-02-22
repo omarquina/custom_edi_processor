@@ -1,3 +1,5 @@
+#!/usr/bin/ruby
+
 # Lee de la BD y lo transforma en un archivo edi 315 para ser enviado vía FTP a ambas compañías en Caucedo
 require 'tiny_tds'
 require 'ostruct'
@@ -6,6 +8,7 @@ require 'net/sftp'
 require 'fileutils'
 require "erb"
 require 'logger'
+
 
 # Clase base para las liberaciones
 class Release < OpenStruct
@@ -22,7 +25,7 @@ class Release < OpenStruct
   end
 
   def siglas_equipo
-    @siglas_equipo ||= (!self.equipo.index("-").nil?) ? self.equipo.split("-")[0] : self.equipo[0..3]
+    @siglas_equipo ||= (!self.equipo.index("-").nil?) ? self.equipo.upcase.split("-")[0] : self.equipo[0..3].upcase
   end
 
   def equipo_6_digitos
@@ -42,7 +45,7 @@ class Release < OpenStruct
   end
 
   def equipo_ajustado
-    @equipo_ajustado ||= self.equipo.delete('-')
+    @equipo_ajustado ||= self.equipo.delete('-').upcase
   end
 
   def template_dir
@@ -327,25 +330,7 @@ class FTPUpdaterDpworld < SFTPUpdater
     self.password = 's9rM=6xi'
     self.server='edi.caucedo.com'
     self.directory= ['ZZVECO']
-    #self.directory= ['ZZVECO','Response']
   end
-=begin
-  def usuario
-    @usuario ||= 'ZZVECO'
-  end
-
-  def password
-    @password ||= 's9rM=6xi'
-  end
-  
-  def server
-    @server ||= 'edi.caucedo.com'
-  end
-
-  def directory
-    @directory ||= ['ZZVECO'] 
-  end
-=end
 end
 
 class FTPUpdaterSTWD < FTPUpdater
@@ -362,24 +347,6 @@ class FTPUpdaterSTWD < FTPUpdater
     self.server='ftpus.veconinter.com'
     self.directory= ['ZIM']
   end
-=begin
-  def usuario
-    @usuario ||= 'bremat\ftp_stonewood'
-  end
-
-  def password
-    @password ||= 'st123456**'
-  end
-  
-  def server
-    @server ||= 'ftpus.veconinter.com'
-  end
-
-  def directory
-    #@directory ||= ['ZIM']
-    @directory  ||= ['STWD']
-  end
-=end
 end
 
 class FTPUpdaterHIT < FTPUpdater
@@ -394,6 +361,7 @@ class FTPUpdaterHIT < FTPUpdater
     self.password = 'hi123456**'
     self.server='ftpus.veconinter.com'
     self.directory= ['Liberaciones']
+    #self.directory = ['Movimientos']
     end
 =begin
   def usuario
@@ -485,8 +453,8 @@ end
 def outputs data
   data.each do |data|
     #puts "DATA: #{data.inspect}"
-    puts "  data mapping: #{data.map}"
-    puts "-----"
+    #puts "  data mapping: #{data.map}"
+    #puts "-----"
     data.output
   end
 end
@@ -507,7 +475,7 @@ client = TinyTds::Client.new username: 'sa', password: 'avila', dataserver: data
 #  puts "SQL RESUlt: #{result.inspect}"
 #end
 #=end
-$LOG = Logger.new(File.join('logs',Time.now.strftime("%d-%m-%Y_%H%M%S.log")))
+$LOG = Logger.new(File.join('.','logs',Time.now.strftime("%d-%m-%Y_%H%M%S.log")))
 
 # OBTENER los equipos a "LIBERAR" de ambos puertos
 caucedo_release_data = []
@@ -586,8 +554,8 @@ test = false
 if test
   #require File.join('.','caucedo_test')
   #incomming_data += @caucedo_objects
-  require File.join('.','hit_test')
-  incomming_data += @hit_objects
+  #require File.join('.','hit_test')
+  #incomming_data += @hit_objects
 else
 #  incomming_data += caucedo_release_data
 #  incomming_data += hit_release_data
@@ -643,6 +611,7 @@ $LOG.debug "ESCRIBIENDO A DISCO ARCHiVOS EDI"
 $LOG.debug "-------------------------------------------------------------"
 outputs caucedo_release_data 
 outputs caucedo_hold_data 
+#resultado = `unix2dos outputs/*`
 $LOG.debug "    RELEASES CAUCEDO"
 #pre_envio_ftp
 #exit

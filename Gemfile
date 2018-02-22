@@ -8,9 +8,10 @@ source "https://rubygems.org"
 git_source(:github) {|repo_name| "https://github.com/#{repo_name}" }
 
 # gem "rails"
+gem 'json'
 group :test,:development do
   gem 'rspec'
-#  gem 'cucumber'
+  gem 'cucumber', '~> 2.99'
 end
 
 gem 'sqlite3'
