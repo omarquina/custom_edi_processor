@@ -544,16 +544,20 @@ dpworld_release_data = []
 stwd_release_data = []
 hit_release_data = []
 
+dpworld_hold_data = []
+stwd_hold_data = []
+hit_hold_data = []
+
 puts "RELEASE"
 $LOG.debug "-----------------------------------------------------------"
 $LOG.debug "-----------------------------------------------------------"
 $LOG.debug "OBTENIENDO LIBERACIONES"
-#status_notificacion = 0
-status_notificacion = 2
+status_notificacion = 0
+#status_notificacion = 2
 results = client.execute("EXEC EnvioNotificacionesSolvencia #{status_notificacion},NULL,'EDI'")
 
 # <TOCOMMENT nota="luego de probar">
-results = results.entries[0..1]
+#results = results.entries[0..1]
 
 #<TODO nota="mejorar este proceso de clasificación para unificar el procesamiento">
 #clasificador {['DOCAU',1]: dpworld_release_data,['DOCAU',4]: stwd_release_data ,['DOHAI',2]: hit_release_data }
@@ -561,13 +565,10 @@ results = results.entries[0..1]
 basic_clasificator results,dpworld_release_data,stwd_release_data,hit_release_data
 
 status_notificacion = 4
-status_notificacion = 6
+#status_notificacion = 6
 results = client.execute("EXEC EnvioNotificacionesSolvencia #{status_notificacion},NULL,'EDI'")
-dpworld_hold_data = []
-stwd_hold_data = []
-hit_hold_data = []
 # <TOCOMMENT nota="luego de probar">
-results = results.entries[0..1]
+#results = results.entries[0..1]
 basic_clasificator results,dpworld_hold_data,stwd_hold_data,hit_hold_data
 =begin
 results.each do |fila|
@@ -619,7 +620,6 @@ $LOG.debug "-----------------------------------------------------------"
 puts "HOLD"
 $LOG.debug "OBTENIENDO LOS BLOQUEOS"
 
-
 =begin
 results.each do |fila|
 	puts "FILA: #{fila.to_s}"
@@ -658,57 +658,7 @@ $LOG.debug "        HAINA: #{hit_hold_data.size}"
 # ajuste de datos para mappear respectivo a cada salida
 incomming_data = []
 
-test = false
-if test
-  #require File.join('.','caucedo_test')
-  #incomming_data += @caucedo_objects
-  #require File.join('.','hit_test')
-  #incomming_data += @hit_objects
-else
-#  incomming_data += caucedo_release_data
-#  incomming_data += hit_release_data
-#  incomming_data += caucedo_hold_data
-#  incomming_data += hit_hold_data
-end
-
-#puts "Incoming DATA: #{incomming_data.inspect}"
-# mapeo de salida
 messages = []
-################### <SPIKES>
-=begin
-template_dir = File.join(".","templates")
-puts "TAMPLAtE DIr: #{template_dir}"
-template_file = File.join(template_dir,"315_caucedo.erb")
-content = File.read(template_file)
-template = ERB.new(content,0,'<')
-#puts "  incomming_data.binding: #{incomming_data}"
-puts "BInding: #{incomming_data[0].get_binding.inspect}"
-puts "template exists: #{File.exists?(template_file)}"
-objeto = incomming_data[0]
-puts "equipo: #{objeto.equipo}"
-puts "equipo numero: #{objeto.numero_equipo}"
-puts "equipo SIGLAS: #{objeto.siglas_equipo}"
-puts "equipo 6 digitos: #{objeto.equipo_6_digitos}"
-puts "equipo ultimo digito: #{objeto.equipo_ultimo_digito}"
-=end
-########</SPIKES>
-#### PROCESAR data de entrada
-# PARA TEST 
-=begin
-incomming_data.each do |objeto|
-  puts "--------------------------------------"
-  contenido = File.read(objeto.template_filename)
-  template = ERB.new(contenido)
-  message = template.result(objeto.get_binding)
-  puts "  equipo: #{objeto.equipo}, siglas: #{objeto.siglas_equipo}, numero: #{objeto.numero_equipo}"
-  puts "------"
-  puts "ERB. template: #{message}"
-  messages << {objeto: objeto,mensaje: message}
-  ## process de output
-  objeto.output message
-  #File.write(File.join("outputs","caucedo","315",objeto.filename+".edi"),message)
-end
-=end
 
 # Generación de archivos
 # CAUCECO
@@ -859,16 +809,16 @@ notificacion = NotificadorSCI.to_xml data
 puts "XML FINAL: \n#{notificacion}"
 #
 # ACTUALIZACIÓN SCI
-puts "COMANDO SQL: \n#{"EXEC EnvioNotificacionesSolvencia NULL,NULL,NULL,@xmlActualizarStatus ='#{notificacion}'"}"
+#puts "COMANDO SQL: \n#{"EXEC EnvioNotificacionesSolvencia NULL,NULL,NULL,@xmlActualizarStatus ='#{notificacion}'"}"
 results = client.execute("EXEC EnvioNotificacionesSolvencia NULL,NULL,NULL,@xmlActualizarStatus ='#{notificacion}'")
 puts "==============================================================="
 puts "Procesado de SCI: "
-puts "result: #{results.inspect}"
-puts "  results.entries: #{results.entries[0]}"
-results.each do |fila|
-  puts "Fila: #{fila}"
-end
+#puts "result: #{results.inspect}"
+#puts "  results.entries: #{results.entries[0]}"
+#results.each do |fila|
+#  puts "Fila: #{fila}"
+#end
 puts "  RESULTS: "
-$LOG.debug "----------------------------------------------"
+$LOG.debug "------ RESULTS ---------------"
 $LOG.debug "Se actualizo SCI: #{results}"
 #exit
