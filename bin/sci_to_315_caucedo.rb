@@ -821,4 +821,5 @@ puts "Procesado de SCI: "
 puts "  RESULTS: "
 $LOG.debug "------ RESULTS ---------------"
 $LOG.debug "Se actualizo SCI: #{results}"
+$LOG.debug "   XML: \n#{notificacion}"
 #exit
