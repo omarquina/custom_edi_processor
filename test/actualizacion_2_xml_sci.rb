@@ -4,18 +4,37 @@ dataserver= 'USMIAVS029.bremat.local\MSQL2008'
 dataserver= 'USMIAVS033.bremat.local\MSQL2008'
 client = TinyTds::Client.new username: 'sa', password: 'avila', dataserver: dataserver, database: "SCI", encoding: 'UTF-8'
 
-config=<<CONFSQL
-SET ANSI_DEFAULTS ON
-SET QUOTED_IDENTIFIER ON
+config=<<-CONFSQL
 SET CURSOR_CLOSE_ON_COMMIT OFF
-SET IMPLICIT_TRANSACTIONS OFF
-SET TEXTSIZE 2147483647
+SET QUOTED_IDENTIFIER ON
 SET CONCAT_NULL_YIELDS_NULL ON
+SET textsize 2147483647
+SET ANSI_WARNINGS ON
+SET ANSI_PADDING ON
+SET quoted_identifier ON
+SET arithabort ON
 CONFSQL
-
-
-client.execute(config).do
-
+#SET ANSI_DEFAULTS ON
+#SET transaction isolation level read committed
+#SET arithabort OFF
+#SET language us_english
+#SET IMPLICIT_TRANSACTIONS ON
+#SET dateformat mdy
+#SET datefirst 7
+# client.execute("SET QUOTED_IDENTIFIER ON").do
+ client.execute("SET CONCAT_NULL_YIELDS_NULL ON").do
+ client.execute("SET TEXTSIZE 2147483647 ").do
+ client.execute("SET ANSI_WARNINGS ON").do
+ client.execute("SET ANSI_PADDING ON").do
+ client.execute("SET CURSOR_CLOSE_ON_COMMIT OFF").do
+ client.execute("SET QUOTED_IDENTIFIER ON").do
+ client.execute("SET ANSI_NULL_DFLT_ON ON").do
+ client.execute("SET IMPLICIT_TRANSACTIONS OFF").do
+ client.execute("set arithabort off").do
+ client.execute("set numeric_roundabort off").do
+# client.execute("SET arithabort ON").do
+#client.execute(config).do
+=begin
 results = client.execute("EXEC EnvioNotificacionesSolvencia NULL,NULL,NULL,'<List>
 <sSolvenciaNotificaciones>
   <solvenciaId>34028</solvenciaId>
@@ -445,7 +464,84 @@ results = client.execute("EXEC EnvioNotificacionesSolvencia NULL,NULL,NULL,'<Lis
   <status>2</status>
 </sSolvenciaNotificaciones>
 </List>'")
+=end
+=begin
+results = client.execute("EXEC EnvioNotificacionesSolvencia NULL,NULL,NULL,'<List>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34147</solvenciaId>
+  <equipoId>JBKU-2110011</equipoId>
+  <manifiestoId>20815</manifiestoId>
+  <solvenciaNotifId>2</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34156</solvenciaId>
+  <equipoId>FSCU-8146412</equipoId>
+  <manifiestoId>20900</manifiestoId>
+  <solvenciaNotifId>1</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34156</solvenciaId>
+  <equipoId>FSCU-8155899</equipoId>
+  <manifiestoId>20900</manifiestoId>
+  <solvenciaNotifId>1</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34150</solvenciaId>
+  <equipoId>TLLU-4311199</equipoId>
+  <manifiestoId>20772</manifiestoId>
+  <solvenciaNotifId>1</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34143</solvenciaId>
+  <equipoId>gaou-6045030</equipoId>
+  <manifiestoId>20834</manifiestoId>
+  <solvenciaNotifId>1</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34156</solvenciaId>
+  <equipoId>FSCU-8146412</equipoId>
+  <manifiestoId>20900</manifiestoId>
+  <solvenciaNotifId>4</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34156</solvenciaId>
+  <equipoId>FSCU-8155899</equipoId>
+  <manifiestoId>20900</manifiestoId>
+  <solvenciaNotifId>4</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34150</solvenciaId>
+  <equipoId>TLLU-4311199</equipoId>
+  <manifiestoId>20772</manifiestoId>
+  <solvenciaNotifId>4</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34143</solvenciaId>
+  <equipoId>gaou-6045030</equipoId>
+  <manifiestoId>20834</manifiestoId>
+  <solvenciaNotifId>4</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+</List>'")
+=end
 
+results = client.execute("EXEC EnvioNotificacionesSolvencia NULL,NULL,NULL,'<List>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34147</solvenciaId>
+  <equipoId>JBKU-2110011</equipoId>
+  <manifiestoId>20815</manifiestoId>
+  <solvenciaNotifId>2</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+</List>'")
 puts "RESULTS: #{results.entries}"
 results.do
 puts "  Codigo resultado: #{client.return_code}"
