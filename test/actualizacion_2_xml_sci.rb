@@ -1,0 +1,547 @@
+require 'tiny_tds'
+
+dataserver= 'USMIAVS029.bremat.local\MSQL2008'
+dataserver= 'USMIAVS033.bremat.local\MSQL2008'
+client = TinyTds::Client.new username: 'sa', password: 'avila', dataserver: dataserver, database: "SCI", encoding: 'UTF-8'
+
+config=<<-CONFSQL
+SET CURSOR_CLOSE_ON_COMMIT OFF
+SET QUOTED_IDENTIFIER ON
+SET CONCAT_NULL_YIELDS_NULL ON
+SET textsize 2147483647
+SET ANSI_WARNINGS ON
+SET ANSI_PADDING ON
+SET quoted_identifier ON
+SET arithabort ON
+CONFSQL
+#SET ANSI_DEFAULTS ON
+#SET transaction isolation level read committed
+#SET arithabort OFF
+#SET language us_english
+#SET IMPLICIT_TRANSACTIONS ON
+#SET dateformat mdy
+#SET datefirst 7
+# client.execute("SET QUOTED_IDENTIFIER ON").do
+ client.execute("SET CONCAT_NULL_YIELDS_NULL ON").do
+ client.execute("SET TEXTSIZE 2147483647 ").do
+ client.execute("SET ANSI_WARNINGS ON").do
+ client.execute("SET ANSI_PADDING ON").do
+ client.execute("SET CURSOR_CLOSE_ON_COMMIT OFF").do
+ client.execute("SET QUOTED_IDENTIFIER ON").do
+ client.execute("SET ANSI_NULL_DFLT_ON ON").do
+ client.execute("SET IMPLICIT_TRANSACTIONS OFF").do
+ client.execute("set arithabort off").do
+ client.execute("set numeric_roundabort off").do
+# client.execute("SET arithabort ON").do
+#client.execute(config).do
+=begin
+results = client.execute("EXEC EnvioNotificacionesSolvencia NULL,NULL,NULL,'<List>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34028</solvenciaId>
+  <equipoId>ZCSU-8939994</equipoId>
+  <manifiestoId>20773</manifiestoId>
+  <solvenciaNotifId>2</solvenciaNotifId>
+  <status>6</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34100</solvenciaId>
+  <equipoId>zcsu-8710713</equipoId>
+  <manifiestoId>20773</manifiestoId>
+  <solvenciaNotifId>2</solvenciaNotifId>
+  <status>6</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34097</solvenciaId>
+  <equipoId>ZCSU-8529156</equipoId>
+  <manifiestoId>20773</manifiestoId>
+  <solvenciaNotifId>2</solvenciaNotifId>
+  <status>6</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34101</solvenciaId>
+  <equipoId>ZCSU-6500596</equipoId>
+  <manifiestoId>20773</manifiestoId>
+  <solvenciaNotifId>2</solvenciaNotifId>
+  <status>6</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34106</solvenciaId>
+  <equipoId>ZCSU-8710713</equipoId>
+  <manifiestoId>20773</manifiestoId>
+  <solvenciaNotifId>2</solvenciaNotifId>
+  <status>6</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34107</solvenciaId>
+  <equipoId>ZCSU-8710713</equipoId>
+  <manifiestoId>20773</manifiestoId>
+  <solvenciaNotifId>2</solvenciaNotifId>
+  <status>6</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34109</solvenciaId>
+  <equipoId>ZCSU-8710713</equipoId>
+  <manifiestoId>20773</manifiestoId>
+  <solvenciaNotifId>2</solvenciaNotifId>
+  <status>6</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34110</solvenciaId>
+  <equipoId>ZCSU-8710713</equipoId>
+  <manifiestoId>20773</manifiestoId>
+  <solvenciaNotifId>2</solvenciaNotifId>
+  <status>6</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34094</solvenciaId>
+  <equipoId>zcsu-8677929</equipoId>
+  <manifiestoId>20824</manifiestoId>
+  <solvenciaNotifId>1</solvenciaNotifId>
+  <status>6</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34105</solvenciaId>
+  <equipoId>FSCU-6657460</equipoId>
+  <manifiestoId>20772</manifiestoId>
+  <solvenciaNotifId>1</solvenciaNotifId>
+  <status>6</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34002</solvenciaId>
+  <equipoId>aflu-1003159</equipoId>
+  <manifiestoId>20782</manifiestoId>
+  <solvenciaNotifId>1</solvenciaNotifId>
+  <status>6</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34002</solvenciaId>
+  <equipoId>aflu-1003170</equipoId>
+  <manifiestoId>20782</manifiestoId>
+  <solvenciaNotifId>1</solvenciaNotifId>
+  <status>6</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34114</solvenciaId>
+  <equipoId>DFSU-2318191</equipoId>
+  <manifiestoId>20834</manifiestoId>
+  <solvenciaNotifId>1</solvenciaNotifId>
+  <status>6</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34114</solvenciaId>
+  <equipoId>TCKU-1557244</equipoId>
+  <manifiestoId>20834</manifiestoId>
+  <solvenciaNotifId>1</solvenciaNotifId>
+  <status>6</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34096</solvenciaId>
+  <equipoId>GVCU-2138193</equipoId>
+  <manifiestoId>20772</manifiestoId>
+  <solvenciaNotifId>1</solvenciaNotifId>
+  <status>6</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34096</solvenciaId>
+  <equipoId>TCKU-2791719</equipoId>
+  <manifiestoId>20772</manifiestoId>
+  <solvenciaNotifId>1</solvenciaNotifId>
+  <status>6</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34096</solvenciaId>
+  <equipoId>ZIMU-2855914</equipoId>
+  <manifiestoId>20772</manifiestoId>
+  <solvenciaNotifId>1</solvenciaNotifId>
+  <status>6</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34104</solvenciaId>
+  <equipoId>ZCSU-8551062</equipoId>
+  <manifiestoId>20771</manifiestoId>
+  <solvenciaNotifId>1</solvenciaNotifId>
+  <status>6</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34116</solvenciaId>
+  <equipoId>SEGU-2150143</equipoId>
+  <manifiestoId>20772</manifiestoId>
+  <solvenciaNotifId>1</solvenciaNotifId>
+  <status>6</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34124</solvenciaId>
+  <equipoId>FIBU-1240866</equipoId>
+  <manifiestoId>20859</manifiestoId>
+  <solvenciaNotifId>1</solvenciaNotifId>
+  <status>6</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34126</solvenciaId>
+  <equipoId>GESU-8098773</equipoId>
+  <manifiestoId>20859</manifiestoId>
+  <solvenciaNotifId>1</solvenciaNotifId>
+  <status>6</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34055</solvenciaId>
+  <equipoId>ZIMU-1303401</equipoId>
+  <manifiestoId>20772</manifiestoId>
+  <solvenciaNotifId>1</solvenciaNotifId>
+  <status>6</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34115</solvenciaId>
+  <equipoId>trlu-1711269</equipoId>
+  <manifiestoId>20834</manifiestoId>
+  <solvenciaNotifId>1</solvenciaNotifId>
+  <status>6</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34130</solvenciaId>
+  <equipoId>GESU-8098773</equipoId>
+  <manifiestoId>20859</manifiestoId>
+  <solvenciaNotifId>1</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34132</solvenciaId>
+  <equipoId>ZCSU-2626287</equipoId>
+  <manifiestoId>20834</manifiestoId>
+  <solvenciaNotifId>1</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34132</solvenciaId>
+  <equipoId>ZCSU-2727832</equipoId>
+  <manifiestoId>20834</manifiestoId>
+  <solvenciaNotifId>1</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34132</solvenciaId>
+  <equipoId>ZCSU-2757204</equipoId>
+  <manifiestoId>20834</manifiestoId>
+  <solvenciaNotifId>1</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34133</solvenciaId>
+  <equipoId>ZCSU-5116858</equipoId>
+  <manifiestoId>20834</manifiestoId>
+  <solvenciaNotifId>1</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34133</solvenciaId>
+  <equipoId>ZCSU-5170910</equipoId>
+  <manifiestoId>20834</manifiestoId>
+  <solvenciaNotifId>1</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34133</solvenciaId>
+  <equipoId>ZCSU-5867308</equipoId>
+  <manifiestoId>20834</manifiestoId>
+  <solvenciaNotifId>1</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34137</solvenciaId>
+  <equipoId>AFLU-1001557</equipoId>
+  <manifiestoId>20829</manifiestoId>
+  <solvenciaNotifId>1</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34137</solvenciaId>
+  <equipoId>AFLU-1002208</equipoId>
+  <manifiestoId>20829</manifiestoId>
+  <solvenciaNotifId>1</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34137</solvenciaId>
+  <equipoId>AFLU-1003164</equipoId>
+  <manifiestoId>20829</manifiestoId>
+  <solvenciaNotifId>1</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34137</solvenciaId>
+  <equipoId>AFLU-1003539</equipoId>
+  <manifiestoId>20829</manifiestoId>
+  <solvenciaNotifId>1</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34131</solvenciaId>
+  <equipoId>FIBU-1240866</equipoId>
+  <manifiestoId>20859</manifiestoId>
+  <solvenciaNotifId>1</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34094</solvenciaId>
+  <equipoId>zcsu-8677929</equipoId>
+  <manifiestoId>20824</manifiestoId>
+  <solvenciaNotifId>4</solvenciaNotifId>
+  <status>6</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34105</solvenciaId>
+  <equipoId>FSCU-6657460</equipoId>
+  <manifiestoId>20772</manifiestoId>
+  <solvenciaNotifId>4</solvenciaNotifId>
+  <status>6</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34002</solvenciaId>
+  <equipoId>aflu-1003159</equipoId>
+  <manifiestoId>20782</manifiestoId>
+  <solvenciaNotifId>4</solvenciaNotifId>
+  <status>6</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34002</solvenciaId>
+  <equipoId>aflu-1003170</equipoId>
+  <manifiestoId>20782</manifiestoId>
+  <solvenciaNotifId>4</solvenciaNotifId>
+  <status>6</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34114</solvenciaId>
+  <equipoId>DFSU-2318191</equipoId>
+  <manifiestoId>20834</manifiestoId>
+  <solvenciaNotifId>4</solvenciaNotifId>
+  <status>6</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34114</solvenciaId>
+  <equipoId>TCKU-1557244</equipoId>
+  <manifiestoId>20834</manifiestoId>
+  <solvenciaNotifId>4</solvenciaNotifId>
+  <status>6</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34096</solvenciaId>
+  <equipoId>GVCU-2138193</equipoId>
+  <manifiestoId>20772</manifiestoId>
+  <solvenciaNotifId>4</solvenciaNotifId>
+  <status>6</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34096</solvenciaId>
+  <equipoId>TCKU-2791719</equipoId>
+  <manifiestoId>20772</manifiestoId>
+  <solvenciaNotifId>4</solvenciaNotifId>
+  <status>6</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34096</solvenciaId>
+  <equipoId>ZIMU-2855914</equipoId>
+  <manifiestoId>20772</manifiestoId>
+  <solvenciaNotifId>4</solvenciaNotifId>
+  <status>6</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34104</solvenciaId>
+  <equipoId>ZCSU-8551062</equipoId>
+  <manifiestoId>20771</manifiestoId>
+  <solvenciaNotifId>4</solvenciaNotifId>
+  <status>6</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34116</solvenciaId>
+  <equipoId>SEGU-2150143</equipoId>
+  <manifiestoId>20772</manifiestoId>
+  <solvenciaNotifId>4</solvenciaNotifId>
+  <status>6</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34124</solvenciaId>
+  <equipoId>FIBU-1240866</equipoId>
+  <manifiestoId>20859</manifiestoId>
+  <solvenciaNotifId>4</solvenciaNotifId>
+  <status>6</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34126</solvenciaId>
+  <equipoId>GESU-8098773</equipoId>
+  <manifiestoId>20859</manifiestoId>
+  <solvenciaNotifId>4</solvenciaNotifId>
+  <status>6</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34115</solvenciaId>
+  <equipoId>trlu-1711269</equipoId>
+  <manifiestoId>20834</manifiestoId>
+  <solvenciaNotifId>4</solvenciaNotifId>
+  <status>6</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34130</solvenciaId>
+  <equipoId>GESU-8098773</equipoId>
+  <manifiestoId>20859</manifiestoId>
+  <solvenciaNotifId>4</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34132</solvenciaId>
+  <equipoId>ZCSU-2626287</equipoId>
+  <manifiestoId>20834</manifiestoId>
+  <solvenciaNotifId>4</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34132</solvenciaId>
+  <equipoId>ZCSU-2727832</equipoId>
+  <manifiestoId>20834</manifiestoId>
+  <solvenciaNotifId>4</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34132</solvenciaId>
+  <equipoId>ZCSU-2757204</equipoId>
+  <manifiestoId>20834</manifiestoId>
+  <solvenciaNotifId>4</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34133</solvenciaId>
+  <equipoId>ZCSU-5116858</equipoId>
+  <manifiestoId>20834</manifiestoId>
+  <solvenciaNotifId>4</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34133</solvenciaId>
+  <equipoId>ZCSU-5170910</equipoId>
+  <manifiestoId>20834</manifiestoId>
+  <solvenciaNotifId>4</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34133</solvenciaId>
+  <equipoId>ZCSU-5867308</equipoId>
+  <manifiestoId>20834</manifiestoId>
+  <solvenciaNotifId>4</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34137</solvenciaId>
+  <equipoId>AFLU-1001557</equipoId>
+  <manifiestoId>20829</manifiestoId>
+  <solvenciaNotifId>4</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34137</solvenciaId>
+  <equipoId>AFLU-1002208</equipoId>
+  <manifiestoId>20829</manifiestoId>
+  <solvenciaNotifId>4</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34137</solvenciaId>
+  <equipoId>AFLU-1003164</equipoId>
+  <manifiestoId>20829</manifiestoId>
+  <solvenciaNotifId>4</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34137</solvenciaId>
+  <equipoId>AFLU-1003539</equipoId>
+  <manifiestoId>20829</manifiestoId>
+  <solvenciaNotifId>4</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34131</solvenciaId>
+  <equipoId>FIBU-1240866</equipoId>
+  <manifiestoId>20859</manifiestoId>
+  <solvenciaNotifId>4</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+</List>'")
+=end
+=begin
+results = client.execute("EXEC EnvioNotificacionesSolvencia NULL,NULL,NULL,'<List>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34147</solvenciaId>
+  <equipoId>JBKU-2110011</equipoId>
+  <manifiestoId>20815</manifiestoId>
+  <solvenciaNotifId>2</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34156</solvenciaId>
+  <equipoId>FSCU-8146412</equipoId>
+  <manifiestoId>20900</manifiestoId>
+  <solvenciaNotifId>1</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34156</solvenciaId>
+  <equipoId>FSCU-8155899</equipoId>
+  <manifiestoId>20900</manifiestoId>
+  <solvenciaNotifId>1</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34150</solvenciaId>
+  <equipoId>TLLU-4311199</equipoId>
+  <manifiestoId>20772</manifiestoId>
+  <solvenciaNotifId>1</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34143</solvenciaId>
+  <equipoId>gaou-6045030</equipoId>
+  <manifiestoId>20834</manifiestoId>
+  <solvenciaNotifId>1</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34156</solvenciaId>
+  <equipoId>FSCU-8146412</equipoId>
+  <manifiestoId>20900</manifiestoId>
+  <solvenciaNotifId>4</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34156</solvenciaId>
+  <equipoId>FSCU-8155899</equipoId>
+  <manifiestoId>20900</manifiestoId>
+  <solvenciaNotifId>4</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34150</solvenciaId>
+  <equipoId>TLLU-4311199</equipoId>
+  <manifiestoId>20772</manifiestoId>
+  <solvenciaNotifId>4</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34143</solvenciaId>
+  <equipoId>gaou-6045030</equipoId>
+  <manifiestoId>20834</manifiestoId>
+  <solvenciaNotifId>4</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+</List>'")
+=end
+
+results = client.execute("EXEC EnvioNotificacionesSolvencia NULL,NULL,NULL,'<List>
+<sSolvenciaNotificaciones>
+  <solvenciaId>34147</solvenciaId>
+  <equipoId>JBKU-2110011</equipoId>
+  <manifiestoId>20815</manifiestoId>
+  <solvenciaNotifId>2</solvenciaNotifId>
+  <status>2</status>
+</sSolvenciaNotificaciones>
+</List>'")
+puts "RESULTS: #{results.entries}"
+results.do
+puts "  Codigo resultado: #{client.return_code}"

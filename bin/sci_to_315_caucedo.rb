@@ -89,7 +89,7 @@ class Release < OpenStruct
 # <XML MAPPING>
   def to_xml
     xml = XMLBuilder.new
-    puts "XML: #{xml.inspect}"
+    #puts "XML: #{xml.inspect}"
     #xml.sSolvenciaNotificaciones do |sSolvenciaNotificaciones|
 =begin
     xml.sSolvenciaNotificaciones do
@@ -238,9 +238,9 @@ class NotificadorSCI
     #xml.str
     # =================================
     content = ""
-    data.each {|objeto| content += "  "+objeto.to_xml+"\n" }
+    data.each {|objeto| content += objeto.to_xml+"\n" }
     xml = "<List>\n"
-    xml << "  #{content.to_s}"
+    xml << "#{content.to_s}"
     xml << "</List>"
   end
 end
@@ -522,9 +522,53 @@ dataserver= 'USMIAVS029.bremat.local\MSQL2008'
 dataserver= 'USMIAVS033.bremat.local\MSQL2008'
 client = TinyTds::Client.new username: 'sa', password: 'avila', dataserver: dataserver, database: "SCI", encoding: 'UTF-8', use_utf16: 'false'
 
+config=<<-SQLCONF
+SET CONCAT_NULL_YIELDS_NULL ON
+SET ANSI_WARNINGS ON
+SET ANSI_PADDING ON
+set quoted_identifier ON
+set arithabort ON
+SQLCONF
+client.execute(config)
+=begin
 client.execute("SET CONCAT_NULL_YIELDS_NULL ON").do
 client.execute("SET ANSI_WARNINGS ON").do
 client.execute("SET ANSI_PADDING ON").do
+client.execute("set quoted_identifier ON").do
+client.execute("set arithabort ON").do
+=end
+#client.execute("set arithabort ON").do
+#client.execute("set arithabort ON").do
+#client.execute("set arithabort ON").do
+################ FROM THIS SOFTWARE 
+# set quoted_identifier off
+# set arithabort off
+# set numeric_roundabort off
+# set ansi_warnings off
+# set ansi_padding off
+# set ansi_nulls off
+# set concat_null_yields_null off
+# set cursor_close_on_commit off
+# set implicit_transactions off
+# set language us_english
+# set dateformat mdy
+# set datefirst 7
+# set transaction isolation level read committed
+######################################## FROM ATLANTIS SQL
+# set quoted_identifier on
+# set arithabort on
+# set numeric_roundabort off
+# set ansi_warnings on
+# set ansi_padding on
+# set ansi_nulls on
+# set concat_null_yields_null on
+# set cursor_close_on_commit off
+# set implicit_transactions off
+# set language us_english
+# set dateformat mdy
+# set datefirst 7
+# set transaction isolation level read committed
+################################################################3
 #results = client.execute("EXEC EnvioNotificacionesSolvencia 0,'EDI','2018-02-01'")
 #results = client.execute("SELECT TOP 1 * FROM tfactura")
 #results.each do |result|
@@ -805,12 +849,67 @@ data = successReleaseHIT + successHoldHIT + errorsReleaseHIT + errorsHoldHIT
 data += errorsHoldDpworld + successHoldDpworld + errorsReleaseDpworld + successReleaseDpworld
 data += errorsHoldStwd + successHoldStwd + errorsReleaseStwd + successReleaseStwd
 data.compact!
+data
 notificacion = NotificadorSCI.to_xml data
 puts "XML FINAL: \n#{notificacion}"
+
 #
 # ACTUALIZACIÓN SCI
-#puts "COMANDO SQL: \n#{"EXEC EnvioNotificacionesSolvencia NULL,NULL,NULL,@xmlActualizarStatus ='#{notificacion}'"}"
-results = client.execute("EXEC EnvioNotificacionesSolvencia NULL,NULL,NULL,@xmlActualizarStatus ='#{notificacion}'")
+config=<<CONFSQL
+SET ANSI_DEFAULTS ON
+SET QUOTED_IDENTIFIER ON
+SET CURSOR_CLOSE_ON_COMMIT OFF
+SET IMPLICIT_TRANSACTIONS OFF
+SET TEXTSIZE 2147483647
+SET CONCAT_NULL_YIELDS_NULL ON
+CONFSQL
+=begin
+set quoted_identifier on
+set arithabort off
+set numeric_roundabort off
+set ansi_warnings on
+set ansi_padding on
+set ansi_nulls on
+set concat_null_yields_null on
+set cursor_close_on_commit off
+set implicit_transactions off
+set language us_english
+set dateformat mdy
+set datefirst 7
+set transaction isolation level read committed
+=end
+
+=begin
+client.execute("SET CONCAT_NULL_YIELDS_NULL ON")#.do
+client.execute("SET ANSI_WARNINGS ON")#.do
+client.execute("SET ANSI_PADDING ON")#.do
+client.execute("set quoted_identifier ON")#.do
+client.execute("set arithabort ON")#.do
+=end
+client.execute(config)#.do
+puts "COMANDO SQL: \n#{"EXEC EnvioNotificacionesSolvencia NULL,NULL,NULL,\'#{notificacion}\'"}"
+$LOG.debug "COMANDO SQL: \n#{"EXEC EnvioNotificacionesSolvencia NULL,NULL,NULL,\'#{notificacion}\'"}"
+
+if data.empty?
+  $LOG.debug "NO HAY OBJETOS PARA ACTUALIZAR"
+  exit 0
+end
+dataserver= 'USMIAVS033.bremat.local\MSQL2008'
+client.close
+client = TinyTds::Client.new username: 'sa', password: 'avila', dataserver: dataserver, database: "SCI", encoding: 'UTF-8', use_utf16: 'false'
+
+ client.execute("SET CONCAT_NULL_YIELDS_NULL ON").do
+ client.execute("SET TEXTSIZE 2147483647 ").do
+ client.execute("SET ANSI_WARNINGS ON").do
+ client.execute("SET ANSI_PADDING ON").do
+ client.execute("SET CURSOR_CLOSE_ON_COMMIT OFF").do
+ client.execute("SET QUOTED_IDENTIFIER ON").do
+ client.execute("SET ANSI_NULL_DFLT_ON ON").do
+ client.execute("SET IMPLICIT_TRANSACTIONS OFF").do
+ client.execute("set arithabort off").do
+ client.execute("set numeric_roundabort off").do
+
+results = client.execute("EXEC EnvioNotificacionesSolvencia NULL,NULL,NULL,'#{notificacion}'").do
 puts "==============================================================="
 puts "Procesado de SCI: "
 #puts "result: #{results.inspect}"
@@ -820,6 +919,7 @@ puts "Procesado de SCI: "
 #end
 puts "  RESULTS: "
 $LOG.debug "------ RESULTS ---------------"
-$LOG.debug "Se actualizo SCI: #{results}"
+puts "Se actualizo SCI: #{client.return_code}"
+$LOG.debug "Se actualizo SCI: #{client.return_code}"
 $LOG.debug "   XML: \n#{notificacion}"
 #exit
