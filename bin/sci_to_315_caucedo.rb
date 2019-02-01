@@ -9,225 +9,7 @@ require 'fileutils'
 require "erb"
 require 'logger'
 require 'xmlbuilder'
-
-# Clase base para las liberaciones
-class Release < OpenStruct
-  attr_accessor :siglas_equipo,:equipo_6_digitos,:equipo_ultimo_digito
-  attr_accessor :template_dir,:exito
-  def get_binding; return binding(); end;
- 
-  def exito!
-    self.exito = true
-  end
-
-  def error!
-    self.exito = false
-  end
-
-  def numero_equipo
-    @numero_equipo ||= (!self.equipo.index("-").nil?) ? self.equipo.split("-")[1] : self.equipo[4..10]
-  end
-
-  def codigo_del_mensaje
-    @codigo ||= Time.now.to_f.to_s.delete(".")[-9..-1]
-  end
-
-  def siglas_equipo
-    @siglas_equipo ||= (!self.equipo.index("-").nil?) ? self.equipo.upcase.split("-")[0] : self.equipo[0..3].upcase
-  end
-
-  def equipo_6_digitos
-     @equipo_6_digitos ||= self.numero_equipo[0..5]
-  end
-
-  def equipo_ultimo_digito
-    @equipo_ultimo_digito ||= self.numero_equipo[6]
-  end
-
-  def fecha
-   @fecha ||= Time.now.strftime("%Y%m%d")
-  end
-
-  def hora
-    @hora ||= Time.now.strftime("%H%M")
-  end
-
-  def equipo
-    self.equipoId
-  end
-
-  def equipo_ajustado
-    @equipo_ajustado ||= self.equipo.delete('-').upcase
-  end
-
-  def template_dir
-    @template_dir ||= File.join(".","templates")
-  end
-
-  def filename
-    @filename ||= equipo_ajustado+".edi"
-  end
-## Escritura vía FTP
-  def contenido
-
-  end 
-### <EDI MAPPING>
-#<TODO: EXTRAER y mejorar>
-  def map
-    @map ||= template.result(self.get_binding)
-  end
-
-  def template
-    @template ||= ERB.new( contenido )
-  end 
-
-  def contenido
-    File.read( self.template_filename )
-  end
-## <EDI MAPPING>
-
-# <XML MAPPING>
-  def to_xml
-    xml = XMLBuilder.new
-    #puts "XML: #{xml.inspect}"
-    #xml.sSolvenciaNotificaciones do |sSolvenciaNotificaciones|
-=begin
-    xml.sSolvenciaNotificaciones do
-      xml.solvenciaId self.solvenciaId.to_i.to_s
-      xml.equipoId self.equipoId
-      xml.manifiestoId self.manifiestoId.to_i.to_s
-      xml.solvenciaNotifId self.solvenciaNotifId.to_i.to_s
-      xml.status notificar_status.to_i.to_s
-    end
-    #xml.str#.delete!("\n")
-=end
-    xml = "<sSolvenciaNotificaciones>\n"
-    xml << "  <solvenciaId>#{self.solvenciaId.to_i}</solvenciaId>\n"
-    xml << "  <equipoId>#{self.equipoId}</equipoId>\n"
-    xml << "  <manifiestoId>#{self.manifiestoId.to_i}</manifiestoId>\n"
-    xml << "  <solvenciaNotifId>#{self.solvenciaNotifId.to_i}</solvenciaNotifId>\n"
-    xml << "  <status>#{notificar_status.to_i}</status>\n"
-    xml << "</sSolvenciaNotificaciones>"
-  end
-# </XML MAPPING>
-  def procesar_exito
-    result =  case self.status
-      when 0,2
-        2
-      when 4,6
-        6 
-    end
-  end
-
-  def procesar_fallo
-    case self.status
-      when 0,2
-        3
-      when 4,6
-        7
-     end
-  end
-
-  def notificar_status
-      exito ?  procesar_exito : procesar_fallo
-  end
-
-end
-
-class ReleaseCaucedo < Release
-  TEMPLATE_NAME='315_caucedo.erb'
-
-  def template_name
-    @template_name ||= '315_caucedo.erb'
-  end
-
-  def tamplate_dir
-    @tamplate_dir ||= 'templates'
-  end
-
-  def template_filename
-    File.join( template_dir , template_name )
-  end
-
-  #<MAPPING>
-  def estatus
-    #puts "STATUS: #{self.status}"
-    self.status == :release ? 'UA' : 'PU'
-    case self.status
-      when :release,0,2
-        'UA'
-      when :hold,4,6
-        'PU' 
-    end
-  end
-  #</MAPPING>
-
-  def outputdir
-    @outputdir ||= File.join ["outputs","caucedo","315"]
-  end
-  
-  def output_filename
-    File.join(outputdir , self.filename)
-  end
-
-  def output message=''
-    File.write(output_filename,map)
-    # Enviar vía FTP
-  end
-
-
-end
-
-class ReleaseSTWD < ReleaseCaucedo
-
-end
-
-class ReleaseHIT < Release
-  TEMPLATE_FLENAME="315_hit.erb"
-
-  def estatus
-    self.status == :release ? 'MS' : 'UT'
-    case self.status
-      when :release,0,2
-        'MS'
-      when :hold,4,6
-        'UT' 
-    end
-  end
-
-  def template_name
-    @template_name ||= '315_hit.erb'
-  end
-
-  def template_filename
-    File.join(template_dir,template_name)
-  end
-
-  def filename
-    self.equipo_ajustado+".edi"
-  end
- 
-  def outputdir
-    @outputdir ||= File.join ["outputs","hit","315"]
-  end
-
-  def output_filename
-    File.join(outputdir,self.filename)
-  end
-
-  def output message=''
-    File.write(output_filename,map)
-    # Enviar vía FTP
-  end
-
-  def self.base_filename
-    @@filename_base = ["outputs","hit","315"]
-    #year = Date.today.year
-    #month = Date.today.month
-    #dia = Date.today.day
-    #Dir.mkdir(File.join(@@filename_base),'')
-  end
-end
+require_relative '../lib/release'
 
 class NotificadorSCI
   def self.to_xml data
@@ -477,6 +259,8 @@ class FTPUpdaterTest < FTPUpdater
   end
 end
 
+
+
 ##### Por definir donde deben colocarse
 def outputs data
   data.each do |data|
@@ -495,6 +279,7 @@ def clasificador origen,params
   end
 end
 
+#TO-FIX: maybe create Data object
 def basic_clasificator origen,dpworld_data,stwd_data,hit_data
   origen.each do |params|
 	puts "FILA: #{params.to_s}"
@@ -518,7 +303,7 @@ end
 
 ####
 #=begin
-dataserver= 'USMIAVS029.bremat.local\MSQL2008'
+#dataserver= 'USMIAVS029.bremat.local\MSQL2008'
 dataserver= 'USMIAVS033.bremat.local\MSQL2008'
 client = TinyTds::Client.new username: 'sa', password: 'avila', dataserver: dataserver, database: "SCI", encoding: 'UTF-8', use_utf16: 'false'
 
@@ -530,58 +315,7 @@ set quoted_identifier ON
 set arithabort ON
 SQLCONF
 client.execute(config)
-=begin
-client.execute("SET CONCAT_NULL_YIELDS_NULL ON").do
-client.execute("SET ANSI_WARNINGS ON").do
-client.execute("SET ANSI_PADDING ON").do
-client.execute("set quoted_identifier ON").do
-client.execute("set arithabort ON").do
-=end
-#client.execute("set arithabort ON").do
-#client.execute("set arithabort ON").do
-#client.execute("set arithabort ON").do
-################ FROM THIS SOFTWARE 
-# set quoted_identifier off
-# set arithabort off
-# set numeric_roundabort off
-# set ansi_warnings off
-# set ansi_padding off
-# set ansi_nulls off
-# set concat_null_yields_null off
-# set cursor_close_on_commit off
-# set implicit_transactions off
-# set language us_english
-# set dateformat mdy
-# set datefirst 7
-# set transaction isolation level read committed
-######################################## FROM ATLANTIS SQL
-# set quoted_identifier on
-# set arithabort on
-# set numeric_roundabort off
-# set ansi_warnings on
-# set ansi_padding on
-# set ansi_nulls on
-# set concat_null_yields_null on
-# set cursor_close_on_commit off
-# set implicit_transactions off
-# set language us_english
-# set dateformat mdy
-# set datefirst 7
-# set transaction isolation level read committed
-################################################################3
-#results = client.execute("EXEC EnvioNotificacionesSolvencia 0,'EDI','2018-02-01'")
-#results = client.execute("SELECT TOP 1 * FROM tfactura")
-#results.each do |result|
-#  puts "SQL RESUlt: #{result.inspect}"
-#end
-#=end
-$LOG = Logger.new(File.join('.','logs',Time.now.strftime("%d-%m-%Y_%H%M%S.log")))
 
-=begin
-dpworld_data = Notificacion.new
-stwd_data = Notificacion.new
-haina_data = Notificacion.new
-=end
 
 # OBTENER los equipos a "LIBERAR" de ambos puertos
 dpworld_release_data = []
@@ -592,58 +326,39 @@ dpworld_hold_data = []
 stwd_hold_data = []
 hit_hold_data = []
 
+status_notificacion = 0
+#status_notificacion = 2
+results_liberacion = client.execute("EXEC EnvioNotificacionesSolvencia #{status_notificacion},NULL,'EDI'")
+puts "RESULTS_liberacion.size: #{results_liberacion.count}"
+status_notificacion = 4
+#status_notificacion = 6
+
+
+# OBTENER los equipos a "BLOQUEAR" de ambos puertos
+results_bloqueo = client.execute("EXEC EnvioNotificacionesSolvencia #{status_notificacion},NULL,'EDI'")
+##<TODO nota"Si no hay objetos">
+if results_liberacion.count == 0 or results_bloqueo.count == 0
+  puts "SALIENDO en el principio: "," results_liberacion.size: #{results_liberacion.count}","results_bloqueo.size: #{results_bloqueo.count}"
+  exit 0
+end
+# LOGGER 
+logname = File.join('.','logs',Time.now.strftime("%d-%m-%Y_%H%M%S.log"))
+$LOG = Logger.new(logname)
 puts "RELEASE"
 $LOG.debug "-----------------------------------------------------------"
 $LOG.debug "-----------------------------------------------------------"
 $LOG.debug "OBTENIENDO LIBERACIONES"
-status_notificacion = 0
-#status_notificacion = 2
-results = client.execute("EXEC EnvioNotificacionesSolvencia #{status_notificacion},NULL,'EDI'")
-
 # <TOCOMMENT nota="luego de probar">
 #results = results.entries[0..1]
 
 #<TODO nota="mejorar este proceso de clasificación para unificar el procesamiento">
 #clasificador {['DOCAU',1]: dpworld_release_data,['DOCAU',4]: stwd_release_data ,['DOHAI',2]: hit_release_data }
 #results = results.entries[0..1]
-basic_clasificator results,dpworld_release_data,stwd_release_data,hit_release_data
+basic_clasificator results_liberacion,dpworld_release_data,stwd_release_data,hit_release_data
 
-status_notificacion = 4
-#status_notificacion = 6
-results = client.execute("EXEC EnvioNotificacionesSolvencia #{status_notificacion},NULL,'EDI'")
 # <TOCOMMENT nota="luego de probar">
 #results = results.entries[0..1]
-basic_clasificator results,dpworld_hold_data,stwd_hold_data,hit_hold_data
-=begin
-results.each do |fila|
-	puts "FILA: #{fila.to_s}"
-        $LOG.debug "   LIBERACION: #{fila.to_s}"
-        #equipo = fila["equipoId"]
-        #puerto = fila["ptocreacion"]
-        #status = :release
-        #tipo_notificacion = fila["solvenciaNotifId"]
-        #params = { equipo: equipo, status: status,tipo_notificacion: tipo_notificacion }
-        params = fila
-        #puts "PARAMS #{params}"
-        #puts "PUERTO: #{params['ptocreacion']}"
-        #exit
-        #case puerto
-        case [params['ptocreacion'],params['solvenciaNotifId']]
-          #when "DOCAU" 
-            #case params['empresa']
-             # when 1
-               when ['DOCAU',1]
-                dpworld_release_data << ReleaseCaucedo.new( params )
-             # when 4
-               when ['DOCAU',4]
-                stwd_release_data << ReleaseCaucedo.new( params )
-           # end
-          # when "DOHAI"
-            when ['DOHAI',2]
-	    hit_release_data << ReleaseHIT.new( params )
-        end
-end
-=end
+basic_clasificator results_bloqueo,dpworld_hold_data,stwd_hold_data,hit_hold_data
 puts "  DPWORLD_RELASE_DATA: #{dpworld_release_data.inspect}"
 puts "  STWD_RELASE_DATA: #{stwd_release_data.inspect}"
 puts "  HIT_RELASE_DATA: #{hit_release_data.inspect}"
@@ -664,28 +379,6 @@ $LOG.debug "-----------------------------------------------------------"
 puts "HOLD"
 $LOG.debug "OBTENIENDO LOS BLOQUEOS"
 
-=begin
-results.each do |fila|
-	puts "FILA: #{fila.to_s}"
-        $LOG.debug "    BLOQUEO: #{fila.to_s}"
-        equipo = fila["equipoId"]
-        puerto = fila["ptocreacion"]
-        tipo_notificacion = fila["solvenciaNotifId"]
-        status = :hold
-        params = { equipo: equipo, status: status,tipo_notificacion: tipo_notificacion }
-        case puerto
-          when /DOCAU/i
-            case empresa
-              when 1
-                dpworld_hold_data << ReleaseCaucedo.new( params )
-              when 4
-                stwd_hold_data << ReleaseCaucedo.new( params )
-            end
-          when /DOHAI/i
-	    hit_hold_data << ReleaseHIT.new( params )
-        end
-end
-=end
 puts "  DPWORLD_HOLD_DATA: #{dpworld_hold_data.inspect}"
 puts "  STWD_HOLD_DATA: #{stwd_hold_data.inspect}"
 puts "  HIT_HOLD_DATA: #{hit_hold_data.inspect}"
@@ -708,79 +401,50 @@ messages = []
 # CAUCECO
 puts "CAUCEDO RELEASE:"
 
+$LOG.debug "-- CAUCEDO --"
 $LOG.debug "-------------------------------------------------------------"
 $LOG.debug "ESCRIBIENDO A DISCO ARCHiVOS EDI"
 $LOG.debug "-------------------------------------------------------------"
 outputs dpworld_release_data 
 outputs dpworld_hold_data 
-outputs stwd_release_data 
-outputs stwd_hold_data 
+#outputs stwd_release_data 
+#outputs stwd_hold_data 
 #resultado = `unix2dos outputs/*`
 $LOG.debug "    RELEASES CAUCEDO"
-#pre_envio_ftp
-#exit
-=begin
-caucedo_release_data.each do |data|
-  puts "data mapping: #{data.map}"
-  data.output
-end
-=end
-# transferencia de archivos
-# PRUEBAS
-# RELEASE
 
-#ftpTest = FTPUpdaterTest.new
-#errors,success=ftpTest.move caucedo_release_data
-#ftpTest.clean
-# HOLD
 =begin
-ftpTest = FTPUpdaterTest.new
-ftpTest.move caucedo_hold_data
-ftpTest.clean
+	$LOG.debug "Transferencia FTP a STONEWOOD" 
+	ftpSTWD = FTPUpdaterSTWD.new
+         #errorsReleaseDpworld , successReleaseDpworld = ftpSTWD.move dpworld_release_data
+	errorsReleaseStwd,successReleaseStwd=ftpSTWD.move stwd_release_data
+	$LOG.debug "    Transferencias con:" 
+	$LOG.debug "       ERR:  #{errorsReleaseStwd.size}"
+	$LOG.debug "       SUCCESS: #{successReleaseStwd.size}"
 =end
 
-####
-#puts ""
-#errors
-
-#=begin
-$LOG.debug "Transferencia FTP a STONEWOOD" 
-ftpSTWD = FTPUpdaterSTWD.new
-errorsReleaseStwd,successReleaseStwd=ftpSTWD.move stwd_release_data
-$LOG.debug "    Transferencias con:" 
-$LOG.debug "       ERR:  #{errorsReleaseStwd.size}"
-$LOG.debug "       SUCCESS: #{successReleaseStwd.size}"
-#=end
 #=begin
 $LOG.debug "Transferencia FTP a DPWOrld" 
 ftpDpworld = FTPUpdaterDpworld.new
-errorsReleaseDpworld,successReleaseDpworld=ftpDpworld.move dpworld_release_data
+errorsReleaseDpworld , successReleaseDpworld = ftpDpworld.move dpworld_release_data
 $LOG.debug "   Transferencias con:" 
 $LOG.debug "     ERR:  #{errorsReleaseDpworld.inspect}"
 $LOG.debug "     SUCCESS: #{successReleaseDpworld.inspect}"
-#=end
-
 puts "     ERR:  #{errorsReleaseDpworld.inspect}"
 puts "     SUCCESS: #{successReleaseDpworld.inspect}"
+#=end
 
-#puts successReleaseDpworld[0].to_xml
-#exit
+# CAUCEDO
 puts "CAUCEDO HOLD:"
 $LOG.debug "HOLD CAUCEDO"
-#caucedo_hold_data.each do |data|
-#  puts "    data mapping: #{data.map}"
-#  data.output
-#end
 # envío de archivos vía FTP
-# CAUCEDO
-#=begin
-$LOG.debug "Transferencia FTP a STONEWOOD" 
-ftpSTWD = FTPUpdaterSTWD.new
-errorsHoldStwd,successHoldStwd=ftpSTWD.move stwd_hold_data
-$LOG.debug "    Transferencias con:" 
-$LOG.debug "       ERR:  #{errorsHoldStwd.size}"
-$LOG.debug "       SUCCESS: #{successHoldStwd.size}"
-#=end
+=begin
+	$LOG.debug "Transferencia FTP a STONEWOOD" 
+	ftpSTWD = FTPUpdaterSTWD.new
+	errorsHoldStwd,successHoldStwd=ftpSTWD.move stwd_hold_data
+	$LOG.debug "    Transferencias con:" 
+	$LOG.debug "       ERR:  #{errorsHoldStwd.size}"
+	$LOG.debug "       SUCCESS: #{successHoldStwd.size}"
+=end
 #=begin
 $LOG.debug "Transferencia FTP a DPWOrld" 
 ftpDpworld = FTPUpdaterDpworld.new
@@ -795,6 +459,7 @@ $LOG.debug "     SUCCESS: #{successHoldDpworld.inspect} "
 
 puts "HAINA RELEASE:"
 
+$LOG.debug "-- CAUCEDO --"
 $LOG.debug "-------------------------------------------------------------"
 $LOG.debug "ESCRIBIENDO A DISCO ARCHiVOS EDI"
 outputs hit_release_data
@@ -823,27 +488,20 @@ $LOG.debug "     SUCCESS: #{successHoldHIT.inspect}"
 
 # NOTIFICAR SCI
 
-
 ######################################################
 ######################################################
 # RELEASE DPWORLD
 #
-
 #puts successReleaseDpworld[0].to_xml
-
 # HOLD DPWORLD
 #
-
 # RELEASE STONEWOOD
 #
-
 # HOLD STONEWOOD
 #
-
 # RELEASE HAINA
 #
 # SUCCESS
-#puts successReleaseHIT[0].to_xml
 puts "-------------------------"
 data = successReleaseHIT + successHoldHIT + errorsReleaseHIT + errorsHoldHIT
 data += errorsHoldDpworld + successHoldDpworld + errorsReleaseDpworld + successReleaseDpworld
@@ -863,29 +521,7 @@ SET IMPLICIT_TRANSACTIONS OFF
 SET TEXTSIZE 2147483647
 SET CONCAT_NULL_YIELDS_NULL ON
 CONFSQL
-=begin
-set quoted_identifier on
-set arithabort off
-set numeric_roundabort off
-set ansi_warnings on
-set ansi_padding on
-set ansi_nulls on
-set concat_null_yields_null on
-set cursor_close_on_commit off
-set implicit_transactions off
-set language us_english
-set dateformat mdy
-set datefirst 7
-set transaction isolation level read committed
-=end
 
-=begin
-client.execute("SET CONCAT_NULL_YIELDS_NULL ON")#.do
-client.execute("SET ANSI_WARNINGS ON")#.do
-client.execute("SET ANSI_PADDING ON")#.do
-client.execute("set quoted_identifier ON")#.do
-client.execute("set arithabort ON")#.do
-=end
 client.execute(config)#.do
 puts "COMANDO SQL: \n#{"EXEC EnvioNotificacionesSolvencia NULL,NULL,NULL,\'#{notificacion}\'"}"
 $LOG.debug "COMANDO SQL: \n#{"EXEC EnvioNotificacionesSolvencia NULL,NULL,NULL,\'#{notificacion}\'"}"
@@ -912,11 +548,7 @@ client = TinyTds::Client.new username: 'sa', password: 'avila', dataserver: data
 results = client.execute("EXEC EnvioNotificacionesSolvencia NULL,NULL,NULL,'#{notificacion}'").do
 puts "==============================================================="
 puts "Procesado de SCI: "
-#puts "result: #{results.inspect}"
-#puts "  results.entries: #{results.entries[0]}"
-#results.each do |fila|
-#  puts "Fila: #{fila}"
-#end
+
 puts "  RESULTS: "
 $LOG.debug "------ RESULTS ---------------"
 puts "Se actualizo SCI: #{client.return_code}"
