@@ -337,7 +337,7 @@ status_notificacion = 4
 # OBTENER los equipos a "BLOQUEAR" de ambos puertos
 results_bloqueo = client.execute("EXEC EnvioNotificacionesSolvencia #{status_notificacion},NULL,'EDI'")
 ##<TODO nota"Si no hay objetos">
-if results_liberacion.count == 0 or results_bloqueo.count == 0
+if results_liberacion.count == 0 and results_bloqueo.count == 0
   puts "SALIENDO en el principio: "," results_liberacion.size: #{results_liberacion.count}","results_bloqueo.size: #{results_bloqueo.count}"
   exit 0
 end
