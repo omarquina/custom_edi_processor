@@ -505,7 +505,7 @@ $LOG.debug "     SUCCESS: #{successHoldHIT.inspect}"
 puts "-------------------------"
 data = successReleaseHIT + successHoldHIT + errorsReleaseHIT + errorsHoldHIT
 data += errorsHoldDpworld + successHoldDpworld + errorsReleaseDpworld + successReleaseDpworld
-data += errorsHoldStwd + successHoldStwd + errorsReleaseStwd + successReleaseStwd
+#data += errorsHoldStwd + successHoldStwd + errorsReleaseStwd + successReleaseStwd
 data.compact!
 data
 notificacion = NotificadorSCI.to_xml data
