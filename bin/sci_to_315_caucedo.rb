@@ -412,8 +412,9 @@ outputs dpworld_hold_data
 #resultado = `unix2dos outputs/*`
 $LOG.debug "    RELEASES CAUCEDO"
 
-=begin
 	$LOG.debug "Transferencia FTP a STONEWOOD" 
+        successReleaseStwd = stwd_release_data.map{|data| data.exito!;data}
+=begin
 	ftpSTWD = FTPUpdaterSTWD.new
          #errorsReleaseDpworld , successReleaseDpworld = ftpSTWD.move dpworld_release_data
 	errorsReleaseStwd,successReleaseStwd=ftpSTWD.move stwd_release_data
@@ -437,8 +438,10 @@ puts "     SUCCESS: #{successReleaseDpworld.inspect}"
 puts "CAUCEDO HOLD:"
 $LOG.debug "HOLD CAUCEDO"
 # envío de archivos vía FTP
-=begin
 	$LOG.debug "Transferencia FTP a STONEWOOD" 
+        successHoldStwd = stwd_hold_data.map{|data| data.exito!; data}
+        puts "  STWD HOLDS: #{stwd_hold_data}"
+=begin
 	ftpSTWD = FTPUpdaterSTWD.new
 	errorsHoldStwd,successHoldStwd=ftpSTWD.move stwd_hold_data
 	$LOG.debug "    Transferencias con:" 
@@ -505,6 +508,8 @@ $LOG.debug "     SUCCESS: #{successHoldHIT.inspect}"
 puts "-------------------------"
 data = successReleaseHIT + successHoldHIT + errorsReleaseHIT + errorsHoldHIT
 data += errorsHoldDpworld + successHoldDpworld + errorsReleaseDpworld + successReleaseDpworld
+puts "STONEWOOD maps: HOLDS: #{successHoldStwd}","         RELEASE: #{successReleaseStwd}"
+data += successHoldStwd + successReleaseStwd
 #data += errorsHoldStwd + successHoldStwd + errorsReleaseStwd + successReleaseStwd
 data.compact!
 data
